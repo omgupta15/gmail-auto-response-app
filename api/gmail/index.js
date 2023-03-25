@@ -164,14 +164,24 @@ const getLabelId = async (gmail, label) => {
   return result.id;
 };
 
+const addLabelIdToThread = async (gmail, threadId, labelId) => {
+  const response = await gmail.users.threads.modify({
+    id: threadId,
+    userId: "me",
+    requestBody: {
+      addLabelIds: [labelId],
+    },
+  });
+  console.log(response);
+  return response;
+};
+
 const sendMessageWithLabel = async (
   gmail,
   messageObject,
   threadId,
   labelId
 ) => {
-  console.log(messageObject.raw);
-
   const response = await gmail.users.messages.send({
     userId: "me",
     requestBody: {
@@ -180,10 +190,13 @@ const sendMessageWithLabel = async (
       labelIds: [labelId],
     },
   });
-
   console.log(response);
+
+  await addLabelIdToThread(gmail, threadId, labelId);
+
   return response.data;
 };
+
 export default {
   getGmailAPI,
   getMailsList,

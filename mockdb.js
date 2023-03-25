@@ -17,7 +17,7 @@ const db = {
 };
 
 const save = function () {
-  const data = JSON.stringify(db);
+  const data = JSON.stringify(db, null, 2);
   writeFile(dbFilePath, Buffer.from(data), () => {
     console.log("DB Saved.");
   });

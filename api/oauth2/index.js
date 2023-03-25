@@ -87,8 +87,15 @@ const refreshAccessToken = async (accessToken, refreshToken) => {
     const response = await oauth2Client.refreshAccessToken();
     console.log("Token refreshed!");
     console.log("response:", response);
+
+    return {
+      success: true,
+      accessToken: response.credentials.access_token,
+      refreshToken: response.credentials.refresh_token,
+    };
   } else {
     console.log("Token not expiring!");
+    return { success: false };
   }
 };
 

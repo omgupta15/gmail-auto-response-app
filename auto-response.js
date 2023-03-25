@@ -2,25 +2,18 @@ import db from "./mockdb.js";
 import oauth2 from "./api/oauth2/index.js";
 import gmail from "./api/gmail/index.js";
 
-const user = {
-  tokens: {
-    success: true,
-    accessToken:
-      "ya29.a0Ael9sCNPZC4Tq-ExkkdoaNoLeEjMJrqx9bxd9Ah9U68T6lJVimRWuK_fkl0k_GehGwMDGQdDm2XmEAV2ajXAAxszo02nOQxuljnTKqLu33NI2ZdJjpmJ4EnFwpl4zQvFoW1KS7l0PlCvcjl5NC3M2L4FksTJaCgYKAdESARASFQF4udJhUA-rRSEouzu0tVU05PlOqg0163",
-    refreshToken:
-      "1//0gUe4Vckg1_xsCgYIARAAGBASNwF-L9Ir_lifZ_j7qduUoIIAVdpzGhu3FQJsHIAavxbgv3J5Hc-T-N3QjqaoMq9-Q5oyzloHpOU",
-    tokenExpiresOn: "2023-03-25T07:32:56.106Z",
-    email: "email.auto.response.listed@gmail.com",
-  },
-  addedOn: "2023-03-25T06:32:57.106Z",
-  lastCheckedOn: "2023-03-25T06:32:57.106Z",
-};
-
 const sendUserReplies = async (user) => {
-  await oauth2.refreshAccessToken(
+  const refreshResponse = await oauth2.refreshAccessToken(
     user.tokens.accessToken,
     user.tokens.refreshToken
   );
+  if (refreshResponse.success) {
+    let userIndex = db.users.findIndex((i) => i === user);
+    db.users[userIndex].accessToken = refreshResponse.accessToken;
+    db.users[userIndex].refreshToken = refreshResponse.refreshToken;
+    db.save();
+    user = db.users[userIndex];
+  }
 
   const gmailAPI = gmail.getGmailAPI(user.tokens.accessToken);
 
