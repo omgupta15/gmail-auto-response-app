@@ -12,9 +12,10 @@ app.set("x-powered-by", false);
 
 // Middlewares
 app.use(express.json());
+app.use(express.static("static"));
 
 app.get("/login", async (req, res) => {
-  res.send("Hi");
+  res.render("login", { authUrl: "/test" });
 });
 
 app.post("/login", async (req, res) => {
