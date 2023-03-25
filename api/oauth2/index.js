@@ -46,20 +46,25 @@ const verifyCode = async (code) => {
     redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URL,
     grant_type: "authorization_code",
   };
-  const response = await axios.post(url, payload);
-  console.log(response);
-  const data = response.data;
-  console.log(data);
+  try {
+    const response = await axios.post(url, payload);
+    console.log(response);
+    const data = response.data;
+    console.log(data);
 
-  const {
-    access_token: accessToken,
-    refresh_token: refreshToken,
-    expires_in: expiresIn,
-  } = data;
-  const tokenExpiresOn = new Date();
-  tokenExpiresOn.setTime(tokenExpiresOn.getTime() + expiresIn * 1000);
+    const {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      expires_in: expiresIn,
+    } = data;
+    const tokenExpiresOn = new Date();
+    tokenExpiresOn.setTime(tokenExpiresOn.getTime() + expiresIn * 1000);
 
-  return { accessToken, refreshToken, tokenExpiresOn };
+    return { success: true, accessToken, refreshToken, tokenExpiresOn };
+  } catch (err) {
+    console.log("Error while verifying code:", err);
+    return { success: false };
+  }
 };
 
 export default { getAuthUrl, verifyCode };

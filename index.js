@@ -39,9 +39,11 @@ app.get("/verify", async (req, res) => {
   const scopes = scope.split("%20");
 
   const googleUser = await oauth2.verifyCode(code);
+  if (!googleUser.success) return res.send("invalid request");
 
   const user = { tokens: googleUser, createdOn: new Date() };
   db.users.push(user);
+  db.save();
 
   res.send("success");
 });
