@@ -3,6 +3,7 @@ import axios from "axios";
 
 const scopes = [
   "https://mail.google.com/",
+  "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
   "https://www.googleapis.com/auth/gmail.addons.current.message.action",
   "https://www.googleapis.com/auth/gmail.addons.current.message.metadata",
@@ -10,9 +11,7 @@ const scopes = [
   "https://www.googleapis.com/auth/gmail.compose",
   "https://www.googleapis.com/auth/gmail.insert",
   "https://www.googleapis.com/auth/gmail.labels",
-  "https://www.googleapis.com/auth/gmail.metadata",
   "https://www.googleapis.com/auth/gmail.modify",
-  "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/gmail.send",
   "https://www.googleapis.com/auth/gmail.settings.basic",
   "https://www.googleapis.com/auth/gmail.settings.sharing",
@@ -24,6 +23,13 @@ const getOAuth2Client = () => {
     process.env.GOOGLE_CLIENT_SECRET,
     process.env.GOOGLE_OAUTH_REDIRECT_URL
   );
+};
+
+const getUserEmail = async (accessToken) => {
+  const response = await axios.get(
+    `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`
+  );
+  return response.data.email;
 };
 
 const getAuthUrl = () => {
@@ -60,11 +66,30 @@ const verifyCode = async (code) => {
     const tokenExpiresOn = new Date();
     tokenExpiresOn.setTime(tokenExpiresOn.getTime() + expiresIn * 1000);
 
-    return { success: true, accessToken, refreshToken, tokenExpiresOn };
+    const email = await getUserEmail(accessToken);
+
+    return { success: true, accessToken, refreshToken, tokenExpiresOn, email };
   } catch (err) {
     console.log("Error while verifying code:", err);
     return { success: false };
   }
 };
 
-export default { getAuthUrl, verifyCode };
+const refreshAccessToken = async (accessToken, refreshToken) => {
+  const oauth2Client = getOAuth2Client();
+
+  oauth2Client.setCredentials({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+
+  if (oauth2Client.isTokenExpiring()) {
+    const response = await oauth2Client.refreshAccessToken();
+    console.log("Token refreshed!");
+    console.log("response:", response);
+  } else {
+    console.log("Token not expiring!");
+  }
+};
+
+export default { getAuthUrl, verifyCode, refreshAccessToken };

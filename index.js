@@ -9,6 +9,8 @@ import db from "./mockdb.js";
 // APIs
 import oauth2 from "./api/oauth2/index.js";
 
+import("./auto-response.js");
+
 const app = express();
 const port = process.env.PORT;
 
@@ -31,17 +33,16 @@ app.get("/verify", async (req, res) => {
   if (!code || typeof code !== "string" || !scope || typeof scope !== "string")
     return res.sendStatus(401);
 
-  let code1 =
-      "4/0AVHEtk7sLMUYJM8d4LnKrlQzmKcurtFmvZCWMjy77g0sjBb3xGg0WEU31mADdkZogSc8VA",
-    scope1 =
-      "https://mail.google.com/%20https://www.googleapis.com/auth/gmail.readonly%20https://www.googleapis.com/auth/gmail.addons.current.action.compose%20https://www.googleapis.com/auth/gmail.addons.current.message.action%20https://www.googleapis.com/auth/gmail.addons.current.message.readonly%20https://www.googleapis.com/auth/gmail.addons.current.message.metadata%20https://www.googleapis.com/auth/gmail.metadata%20https://www.googleapis.com/auth/gmail.send%20https://www.googleapis.com/auth/gmail.labels%20https://www.googleapis.com/auth/gmail.insert%20https://www.googleapis.com/auth/gmail.settings.sharing%20https://www.googleapis.com/auth/gmail.settings.basic%20https://www.googleapis.com/auth/gmail.compose%20https://www.googleapis.com/auth/gmail.modify";
-
   const scopes = scope.split("%20");
 
   const googleUser = await oauth2.verifyCode(code);
   if (!googleUser.success) return res.send("invalid request");
 
-  const user = { tokens: googleUser, createdOn: new Date() };
+  const user = {
+    tokens: googleUser,
+    addedOn: new Date(),
+    lastCheckedOn: new Date(),
+  };
   db.users.push(user);
   db.save();
 
